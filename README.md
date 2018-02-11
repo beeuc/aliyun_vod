@@ -14,8 +14,8 @@ In the configuration file add a line for aliyun_vod_key and a line for aliyun_vo
 2. This module depends some Aliyun SDK, run the following commands to have them installed. 
 
 ```
-pip install aliyun-python-sdk-core
-pip install aliyun-python-sdk-vod
+pip3 install aliyun-python-sdk-core
+pip3 install aliyun-python-sdk-vod
 ```
 
 For more details, refer to https://help.aliyun.com/document_detail/61060.html?spm=a2c4g.11186623.6.730.Pf8pwd for the Aliyun VOD service user guide. 
