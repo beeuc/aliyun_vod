@@ -1,0 +1,60 @@
+<odoo>
+  <data>
+    <!-- explicit list view definition -->
+    <!--
+    <record model="ir.ui.view" id="aliyun_vod.list">
+      <field name="name">aliyun_vod list</field>
+      <field name="model">aliyun_vod.aliyun_vod</field>
+      <field name="arch" type="xml">
+        <tree>
+          <field name="name"/>
+          <field name="value"/>
+          <field name="value2"/>
+        </tree>
+      </field>
+    </record>
+    -->
+
+    <!-- actions opening views on models -->
+    <!--
+    <record model="ir.actions.act_window" id="aliyun_vod.action_window">
+      <field name="name">aliyun_vod window</field>
+      <field name="res_model">aliyun_vod.aliyun_vod</field>
+      <field name="view_mode">tree,form</field>
+    </record>
+    -->
+
+    <!-- server action to the one above -->
+    <!--
+    <record model="ir.actions.server" id="aliyun_vod.action_server">
+      <field name="name">aliyun_vod server</field>
+      <field name="model_id" ref="model_aliyun_vod_aliyun_vod"/>
+      <field name="state">code</field>
+      <field name="code">
+        action = {
+          "type": "ir.actions.act_window",
+          "view_mode": "tree,form",
+          "res_model": self._name,
+        }
+      </field>
+    </record>
+    -->
+
+    <!-- Top menu item -->
+    <!--
+    <menuitem name="aliyun_vod" id="aliyun_vod.menu_root"/>
+    -->
+    <!-- menu categories -->
+    <!--
+    <menuitem name="Menu 1" id="aliyun_vod.menu_1" parent="aliyun_vod.menu_root"/>
+    <menuitem name="Menu 2" id="aliyun_vod.menu_2" parent="aliyun_vod.menu_root"/>
+    -->
+    <!-- actions -->
+    <!--
+    <menuitem name="List" id="aliyun_vod.menu_1_list" parent="aliyun_vod.menu_1"
+              action="aliyun_vod.action_window"/>
+    <menuitem name="Server to list" id="aliyun_vod" parent="aliyun_vod.menu_2"
+              action="aliyun_vod.action_server"/>
+    -->
+  </data>
+</odoo>

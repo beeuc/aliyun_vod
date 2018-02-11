@@ -1,0 +1,51 @@
+<odoo>
+    <data>
+        <template id="player">
+            <title>Aliyun Vod Player</title>
+              <link rel="stylesheet" href="https://g.alicdn.com/de/prismplayer/2.3.5/skins/default/aliplayer-min.css" />
+              <script type="text/javascript" src="https://g.alicdn.com/de/prismplayer/2.3.5/aliplayer-min.js"></script>
+        
+              <div class="prism-player" id="J_prismPlayer"></div>
+              <script>
+                  var player = Aliplayer(
+                     {id: "J_prismPlayer",
+                     autoplay: true,
+                     width: "100%",
+                     height: "100%",
+                     language: "zh-cn",
+                     snapshot: true,
+                     vid: "<t t-esc="vid"/>",
+                     playauth: "<t t-esc="playAuth"/>",});
+             </script>
+        </template>
+
+        <template id="videolist">
+            <title>Video List</title>
+            <t t-foreach="VideoList" t-as="video">
+              <p><t t-esc="video['Title']"/></p>
+              <p><t t-esc="video['CoverURL']"/></p>
+              <p><img t-att-src="video['CoverURL']" t-att-height="200"/></p>
+              <p><img t-att-src="'/report/barcode/QR/%s' % video['CoverURL']" t-att-width="200" t-att-height="200" /></p>
+              <p><a t-att-href="'/aliyunvod/player/%s' % video['VideoId']"><t t-esc="video['VideoId']"/></a></p>
+            </t>
+        </template>
+        <!-- <template id="listing"> -->
+        <!--   <ul> -->
+        <!--     <li t-foreach="objects" t-as="object"> -->
+        <!--       <a t-attf-href="#{ root }/objects/#{ object.id }"> -->
+        <!--         <t t-esc="object.display_name"/> -->
+        <!--       </a> -->
+        <!--     </li> -->
+        <!--   </ul> -->
+        <!-- </template> -->
+        <!-- <template id="object"> -->
+        <!--   <h1><t t-esc="object.display_name"/></h1> -->
+        <!--   <dl> -->
+        <!--     <t t-foreach="object._fields" t-as="field"> -->
+        <!--       <dt><t t-esc="field"/></dt> -->
+        <!--       <dd><t t-esc="object[field]"/></dd> -->
+        <!--     </t> -->
+        <!--   </dl> -->
+        <!-- </template> -->
+    </data>
+</odoo>
