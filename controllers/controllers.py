@@ -1,15 +1,20 @@
 # -*- coding: utf-8 -*-
 import json
 import time
+import base64
+import requests
 import datetime
+import logging
 
-
-from odoo import http
+from odoo import http, api
+from odoo.http import request
 from odoo.tools import config
-from aliyunsdkcore import client
+from aliyunsdkcore import client, acs_exception
 from aliyunsdkvod.request.v20170321 import GetPlayInfoRequest # 每个接口都需要引入对应的类，此处以调用GetPlayInfo接口为例
 from aliyunsdkvod.request.v20170321 import GetVideoPlayAuthRequest
 from aliyunsdkvod.request.v20170321 import GetVideoListRequest
+
+_logger = logging.getLogger(__name__)
 
 class AliyunVod(http.Controller):
 
@@ -39,17 +44,87 @@ class AliyunVod(http.Controller):
         response = json.loads(clt.do_action_with_exception(request))
         return response
 
-    def _get_video_list(self, clt):
+    def _get_video_list(self, clt, fromtimestamp=0, pagesize=100, pageno=1):
         request = GetVideoListRequest.GetVideoListRequest()
         utcNow = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
-        utcMonthAgo = datetime.datetime.utcfromtimestamp(time.time() - 30*86400).strftime("%Y-%m-%dT%H:%M:%SZ")
-        request.set_StartTime(utcMonthAgo)   # 视频创建的起始时间，为UTC格式
+        utcStart = datetime.datetime.utcfromtimestamp(fromtimestamp).strftime("%Y-%m-%dT%H:%M:%SZ")
+        request.set_StartTime(utcStart)   # 视频创建的起始时间，为UTC格式
         request.set_EndTime(utcNow)          # 视频创建的结束时间，为UTC格式
-        request.set_PageNo(1)
-        request.set_PageSize(20)
+        request.set_PageNo(pageno)
+        request.set_PageSize(pagesize) 
         request.set_accept_format('JSON')
-        response = json.loads(clt.do_action_with_exception(request))
+        try:
+            response = json.loads(clt.do_action_with_exception(request))
+        except acs_exception.exceptions.ServerException as e:
+            response = ''
+            #no new video exists
+
         return response
+
+    @api.model
+    def _fetch_data(self, base_url, data, content_type=False, extra_params=False):
+        result = {'values': dict()}
+        try:
+            response = requests.get(base_url, params=data)
+            response.raise_for_status()
+            if content_type == 'json':
+                result['values'] = response.json()
+            elif content_type in ('image', 'pdf'):
+                result['values'] = base64.b64encode(response.content)
+            else:
+                result['values'] = response.content
+        except requests.exceptions.HTTPError as e:
+            result['error'] = e.response.content
+        except requests.exceptions.ConnectionError as e:
+            result['error'] = str(e)
+        return result
+
+    @http.route('/aliyunvod/load/', auth='public')
+    def load(self, **kw):
+        
+        slidemodel = request.env['slide.slide']
+
+        slide_records = slidemodel.search([('mime_type','=','aliyun')], limit=1, order='create_date desc')
+
+        for slide in slide_records:
+            _logger.info("last imported slide name is %s", slide['name'])
+            _logger.info("last imported slide create date is %s", slide['create_date'])
+
+        if not slide_records:
+            from_datetime = datetime.datetime.utcfromtimestamp(0)
+        else:
+            for slide in slide_records:
+                dt = datetime.datetime.strptime(slide['create_date'], "%Y-%m-%d %H:%M:%S")
+                from_datetime = dt.timestamp()
+
+                
+        clt = self._init_vod_client()
+        response = self._get_video_list(clt, from_datetime, 100);
+
+        if response and response['Total'] > 100:
+            '''
+            logic for getting pages from No. 2 to the end
+            '''
+        values = ""
+        if response:
+            for video in response['VideoList']['Video']:
+               values = {'slide_type': 'video', 'document_id': video['VideoId']} 
+
+               values.update({ 
+                   'name': video['Title'],
+                   'channel_id': 1, # default channel is 'Public Channel'
+                   'website_published': False, # video is not published by default
+                   'image': self._fetch_data(video['CoverURL'], {}, 'image')['values'],
+                   'mime_type': 'aliyun',})
+
+               slide_id = request.env['slide.slide'].create(values)
+
+               _logger.info("new slide imported : <<< %s >>>", values['name'])
+
+        if values and values['name']:
+            return  values['name']
+        else:
+            return ""
 
 
     @http.route('/aliyunvod/player/', auth='public')
