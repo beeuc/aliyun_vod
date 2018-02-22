@@ -3,7 +3,7 @@ An ODOO module which integrates w/ aliyun VOD service
 
 This ODOO module includes a page that can list some of video media in one particular Alyun VOD account and a player page that can play one of them.
 
-The module is tested against with ODOO version 11. 
+The module is tested against with ODOO version 11 and python version 3.6. 
 
 ## Prerequisites
 
