@@ -108,6 +108,8 @@ class AliyunVod(http.Controller):
         values = ""
         if response:
             for video in response['VideoList']['Video']:
+	       if (lower(video['Status']) != "normal"):
+	           continue; 
                values = {'slide_type': 'video', 'document_id': video['VideoId']} 
 
                values.update({ 
